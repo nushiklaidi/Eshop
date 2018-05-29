@@ -8,8 +8,9 @@ using Eshop.Core.Models;
 
 namespace Eshop.DataAccess.InMemory
 {
-    class ProductRepository
+    public class ProductRepository
     {
+        //Create an Object cashe for memory
         ObjectCache cashe = MemoryCache.Default;
         List<Product> products;
 
@@ -17,26 +18,32 @@ namespace Eshop.DataAccess.InMemory
         {
             products = cashe["products"] as List<Product>;
 
+            //If product is null create new list
             if(products == null)
             {
                 products = new List<Product>();
             }
         }
 
+        //Commit products to cash
         public void Commit()
         {
             cashe["products"] = products;
         }
 
+        //Insert new product
         public void Insert(Product p)
         {
             products.Add(p);
         }
 
+        //Update a product
         public void Update(Product product)
         {
+            //Get an Id of product
             Product productToUpDate = products.Find(p => p.Id == product.Id);
 
+            //If product isn't null
             if(productToUpDate != null)
             {
                 productToUpDate = product;
@@ -47,10 +54,13 @@ namespace Eshop.DataAccess.InMemory
             }
         }
 
+        //Find a product
         public Product Find(string Id)
         {
+            //Get an Id of product
             Product product = products.Find(p => p.Id == Id);
 
+            //If product isn't null
             if (product != null)
             {
                 return product;
@@ -66,10 +76,13 @@ namespace Eshop.DataAccess.InMemory
             return products.AsQueryable();
         }
 
+        //Delete a product
         public void Delete(string Id)
         {
+            //Get an Id of product
             Product productToDelete = products.Find(p => p.Id == Id);
 
+            //If product isn't null
             if (productToDelete != null)
             {
                 products.Remove(productToDelete);
