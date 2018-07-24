@@ -5,18 +5,24 @@ using System.Web;
 using System.Web.Mvc;
 using Eshop.DataAccess.InMemory;
 using Eshop.Core.Models;
+using Eshop.Core.ViewModels;
+using Eshop.Core.Contracts;
+using System.IO;
 
 namespace Eshop.WebUI.Controllers
 {
     public class ProductManagerController : Controller
     {
-        //ProductRepository is class who can used th cash for memory        
-        ProductRepository context;
+        //IRepository is a Interface from InMemoryRepository       
+        IRepository<Product> context;
+        IRepository<ProductCategory> productCategories;
 
-        public ProductManagerController()
+        public ProductManagerController(IRepository<Product> productContext, IRepository<ProductCategory> productCategoryContext)
         {
-            context = new ProductRepository();
+            context = productContext;
+            productCategories = productCategoryContext;
         }
+
         //Return all product from context to Index
         // GET: ProductManager
         public ActionResult Index()
@@ -29,13 +35,16 @@ namespace Eshop.WebUI.Controllers
         //Create new product
         public ActionResult Create()
         {
-            Product product = new Product();
-            return View(product);
+            ProductManagerViewModel viewModel = new ProductManagerViewModel();
+
+            viewModel.Product = new Product();
+            viewModel.ProductCategories = productCategories.Collection();
+            return View(viewModel);
         }
 
         //Create new product
         [HttpPost]
-        public ActionResult Create(Product product)
+        public ActionResult Create(Product product, HttpPostedFileBase file)
         {
             if(!ModelState.IsValid)
             {
@@ -43,7 +52,12 @@ namespace Eshop.WebUI.Controllers
             }
             else
             {
-                context.Insert(product);
+                if(file != null)
+                {
+                    product.Image = product.Id + Path.GetExtension(file.FileName);
+                    file.SaveAs(Server.MapPath("//Content//ProductImages//") + product.Image);
+                }
+                context.Create(product);
                 context.Commit();
 
                 return RedirectToAction("Index");
@@ -60,15 +74,19 @@ namespace Eshop.WebUI.Controllers
             }
             else
             {
-                return View(product);
+                ProductManagerViewModel viewModel = new ProductManagerViewModel();
+                viewModel.Product = product;
+                viewModel.ProductCategories = productCategories.Collection();
+                return View(viewModel);
             }
         }
 
         //Edit product
         [HttpPost]
-        public ActionResult Edit(Product product, string Id)
+        public ActionResult Edit(Product product, string Id, HttpPostedFileBase file)
         {
             Product productToEdit = context.Find(Id);
+
             if (productToEdit == null)
             {
                 return HttpNotFound();
@@ -79,12 +97,49 @@ namespace Eshop.WebUI.Controllers
                 {
                     return View(productToEdit);
                 }
+                if (file != null)
+                {
+                    productToEdit.Image = product.Id + Path.GetExtension(file.FileName);
+                    file.SaveAs(Server.MapPath("//Content//ProductImages//") + productToEdit.Image);
+                }
+
                 productToEdit.Category = product.Category;
                 productToEdit.Description = product.Description;
-                productToEdit.Image = product.Image;
                 productToEdit.Name = product.Name;
                 productToEdit.Price = product.Price;
 
+                context.Commit();
+                return RedirectToAction("Index");
+            }
+        }
+
+        //Delete product
+        public ActionResult Delete(string Id)
+        {
+            Product productToDelete = context.Find(Id);
+            if (productToDelete == null)
+            {
+                return HttpNotFound();
+            }
+            else
+            {
+                return View(productToDelete);
+            }
+        }
+
+        //Delete product
+        [HttpPost]
+        [ActionName("Delete")]
+        public ActionResult ConfirmDelete(string Id)
+        {
+            Product productToDelete = context.Find(Id);
+            if (productToDelete == null)
+            {
+                return HttpNotFound();
+            }
+            else
+            {
+                context.Delete(Id);
                 context.Commit();
                 return RedirectToAction("Index");
             }
