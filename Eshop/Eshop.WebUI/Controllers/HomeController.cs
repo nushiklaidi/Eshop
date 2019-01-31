@@ -9,6 +9,9 @@ using System.Web.Mvc;
 
 namespace Eshop.WebUI.Controllers
 {
+    /// <summary>
+    /// Test 3 git private
+    /// </summary>
     public class HomeController : Controller
     {
         //IRepository is a Interface from InMemoryRepository       
