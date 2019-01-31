@@ -12,6 +12,9 @@ using Eshop.WebUI.Models;
 
 namespace Eshop.WebUI.Controllers
 {
+    /// <summary>
+    /// Test git
+    /// </summary>
     [Authorize]
     public class AccountController : Controller
     {
