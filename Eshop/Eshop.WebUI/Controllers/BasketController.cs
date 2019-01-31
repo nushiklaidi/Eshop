@@ -7,6 +7,9 @@ using System.Web.Mvc;
 
 namespace Eshop.WebUI.Controllers
 {
+    /// <summary>
+    /// Test 2 git
+    /// </summary>
     public class BasketController : Controller
     {
         IBasketService basketService;
